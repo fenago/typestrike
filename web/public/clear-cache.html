@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear TypeStrike Cache</title>
+</head>
+<body>
+    <h1>TypeStrike - Clear Cache</h1>
+    <button onclick="clearCache()">Clear All Cache & Reload</button>
+    <pre id="output"></pre>
+    
+    <script>
+        function clearCache() {
+            const output = document.getElementById('output');
+            output.textContent = 'Clearing cache...\n';
+            
+            // Clear localStorage
+            localStorage.clear();
+            output.textContent += '✓ localStorage cleared\n';
+            
+            // Clear sessionStorage
+            sessionStorage.clear();
+            output.textContent += '✓ sessionStorage cleared\n';
+            
+            output.textContent += '\nReloading in 2 seconds...';
+            
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

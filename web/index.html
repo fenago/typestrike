@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypeStrike - AI-Powered Typing Trainer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1e3f 100%);
+            color: #fff;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #container {
+            max-width: 900px;
+            width: 100%;
+            padding: 20px;
+        }
+
+        #loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        #loading h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #00f0ff;
+            text-shadow: 0 0 20px #00f0ff;
+        }
+
+        #loading-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        #loading-progress {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #00f0ff, #ff006e);
+            transition: width 0.3s ease;
+        }
+
+        #loading-text {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        #game-canvas {
+            display: none;
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.3);
+        }
+
+        #stats-panel {
+            display: none;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .stat-label {
+            color: #00f0ff;
+        }
+
+        .stat-value {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        #ai-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 240, 255, 0.5);
+            font-size: 0.9em;
+            display: none;
+        }
+
+        #ai-status.loading {
+            display: block;
+            color: #ffaa00;
+        }
+
+        #ai-status.ready {
+            display: block;
+            color: #39ff14;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .error {
+            color: #ff3366;
+            background: rgba(255, 51, 102, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 51, 102, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="loading">
+            <h1>🚀 TYPE STRIKE 🚀</h1>
+            <div id="loading-bar">
+                <div id="loading-progress"></div>
+            </div>
+            <div id="loading-text">Loading game engine...</div>
+        </div>
+
+        <canvas id="game-canvas" width="800" height="600"></canvas>
+
+        <div id="stats-panel">
+            <div class="stat-row">
+                <span class="stat-label">Total Sessions</span>
+                <span class="stat-value" id="stat-sessions">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Best Score</span>
+                <span class="stat-value" id="stat-best-score">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Average WPM</span>
+                <span class="stat-value" id="stat-wpm">0</span>
+            </div>
+        </div>
+
+        <div id="ai-status" class="loading pulse">
+            🤖 AI Coach loading...
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
