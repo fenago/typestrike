@@ -84,43 +84,36 @@ The `build-netlify.sh` script:
 
 ## Important Notes
 
-### Model Files - CRITICAL FOR DEPLOYMENT
+### Model Files - Optional But Recommended
 
 ⚠️ **Gemma model files are NOT included in Git** (they're 276MB to 8GB in size).
 
-**This is the core feature of TypeStrike** - without models, users cannot use the AI coach.
+**Good news**: The app deploys and works WITHOUT models! The typing game is fully functional.
 
-You have **3 options** for hosting models in production:
+**AI Coach behavior**:
+- ✅ **With models**: Users get personalized AI coaching after each session
+- ⚠️ **Without models**: Users see fallback feedback (still helpful!)
+- 🎮 **Game always works**: Missing models never break the app
 
-#### Option 1: HuggingFace Direct URLs (Recommended for Testing)
+**For production, hosting models gives users the full AI experience.**
 
-**Pros**: No hosting costs, easy setup, always up-to-date
-**Cons**: Requires user to accept Google's terms on HuggingFace, may be slower
+⚠️ **IMPORTANT**: Gemma models are **gated on HuggingFace** - you must accept Google's terms to download them. Direct HuggingFace URLs won't work in production because browser requests aren't authenticated.
 
-Update `web/src/config.ts` to use HuggingFace URLs:
+**To enable AI coaching, host models on a CDN or Git LFS.** Here are your options:
 
-```typescript
-'gemma-3n-e2b': {
-  name: 'Gemma 3n E2B',
-  size: '~1.5GB',
-  description: 'Good balance of speed and quality (multimodal)',
-  url: 'https://huggingface.co/google/gemma-3n-E2B-it-litert-lm/resolve/main/gemma-3n-E2B-it-int4.litertlm',
-  multimodal: true,
-},
-```
+#### Option 1: Deploy Now, Add Models Later (Quickest)
 
-**All HuggingFace URLs:**
-- 270M: `https://huggingface.co/litert-community/gemma-3-270m-it/resolve/main/gemma3-270m-it-q8-web.task`
-- E2B (1.5GB): `https://huggingface.co/google/gemma-3n-E2B-it-litert-lm/resolve/main/gemma-3n-E2B-it-int4.litertlm`
-- E4B (3GB): `https://huggingface.co/google/gemma-3n-E4B-it-litert-lm/resolve/main/gemma-3n-E4B-it-int4.litertlm`
-- 4B: `https://huggingface.co/litert-community/Gemma3-4B-IT/resolve/main/Gemma3-4B-IT-int4-Web.litertlm`
-- 12B: `https://huggingface.co/litert-community/Gemma3-12B-IT/resolve/main/Gemma3-12B-IT-int4-Web.litertlm`
+**Just deploy as-is!** The app works without models:
+1. Push to GitHub (already done ✅)
+2. Netlify builds automatically
+3. App works with fallback AI feedback
+4. Add models later when ready
 
-Then rebuild: `npm run build`
+**This gets your app live immediately.**
 
-#### Option 2: External CDN (Recommended for Production)
+#### Option 2: External CDN (Best User Experience)
 
-**Pros**: Fast, reliable, you control the files
+**Pros**: Fast, reliable, full AI features, you control the files
 **Cons**: Small hosting cost (~$1-5/month for bandwidth)
 
 **Step-by-step with Cloudflare R2 (Free tier: 10GB storage, 10M requests/month):**
