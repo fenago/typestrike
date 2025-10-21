@@ -9,8 +9,19 @@ if ! command -v rustc &> /dev/null; then
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.70.0
     source $HOME/.cargo/env
 else
-    echo "✅ Rust already installed: $(rustc --version)"
+    echo "✅ Rust already installed"
 fi
+
+# Always source cargo env and set default toolchain
+source $HOME/.cargo/env 2>/dev/null || true
+
+# Set default toolchain if not set
+if ! rustup default &> /dev/null; then
+    echo "🔧 Setting default Rust toolchain..."
+    rustup default 1.70.0
+fi
+
+echo "✅ Rust version: $(rustc --version)"
 
 # Add wasm32 target
 echo "🎯 Adding wasm32-unknown-unknown target..."
