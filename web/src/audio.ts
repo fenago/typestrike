@@ -97,8 +97,6 @@ export class AudioManager {
     this.ensureContext();
     if (!this.context || !this.sfxGainNode) return;
 
-    const now = this.context.currentTime;
-
     switch (effect) {
       case 'letterHit':
         this.playExplosion();

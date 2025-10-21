@@ -1,4 +1,5 @@
 use macroquad::prelude::*;
+use macroquad::rand::gen_range;
 use std::collections::HashMap;
 use crate::entities::{Letter, Particle, Player};
 use crate::levels::Level;
@@ -107,18 +108,23 @@ impl Game {
         // Check for letters that hit the ground
         let screen_height = screen_height();
         let mut to_remove = Vec::new();
+        let mut trigger_flash = false;
 
         for (i, letter) in self.letters.iter().enumerate() {
             if letter.is_off_screen(screen_height) {
                 to_remove.push(i);
                 self.player.lives -= 1;
                 self.combo = 0;
-                self.trigger_flash(Color::from_rgba(255, 51, 102, 100)); // Red flash
+                trigger_flash = true;
 
                 if self.player.lives <= 0 {
                     self.state = GameState::GameOver;
                 }
             }
+        }
+
+        if trigger_flash {
+            self.trigger_flash(Color::new(1.0, 0.2, 0.4, 0.4)); // Red flash
         }
 
         // Remove letters from back to front to maintain indices
@@ -215,12 +221,12 @@ impl Game {
             return;
         }
 
-        let idx = rand::random::<usize>() % self.level.letters.len();
+        let idx = gen_range(0, self.level.letters.len());
         let character = self.level.letters[idx];
 
         let screen_width = screen_width();
         let margin = 60.0;
-        let x = margin + rand::random::<f32>() * (screen_width - margin * 2.0);
+        let x = gen_range(margin, screen_width - margin);
 
         let letter = Letter::new(character, x, self.level.fall_speed);
         self.letters.push(letter);
@@ -255,12 +261,12 @@ impl Game {
     pub fn draw(&self) {
         // Apply screen shake
         let shake_x = if self.screen_shake > 0.0 {
-            (rand::random::<f32>() - 0.5) * self.screen_shake * 4.0
+            gen_range(-0.5, 0.5) * self.screen_shake * 4.0
         } else {
             0.0
         };
         let shake_y = if self.screen_shake > 0.0 {
-            (rand::random::<f32>() - 0.5) * self.screen_shake * 4.0
+            gen_range(-0.5, 0.5) * self.screen_shake * 4.0
         } else {
             0.0
         };
@@ -280,12 +286,12 @@ impl Game {
 
         // Draw flash overlay
         if self.flash_timer > 0.0 {
-            let alpha = (self.flash_timer * 255.0 * 5.0) as u8;
-            let color = Color::from_rgba(
+            let alpha = (self.flash_timer * 5.0).min(self.flash_color.a);
+            let color = Color::new(
                 self.flash_color.r,
                 self.flash_color.g,
                 self.flash_color.b,
-                alpha.min(self.flash_color.a),
+                alpha,
             );
             draw_rectangle(0.0, 0.0, screen_width(), screen_height(), color);
         }

@@ -460,7 +460,6 @@ export class SettingsUI {
 
     // Particles toggle
     const particlesToggle = panel.querySelector('#particles-toggle');
-    const currentParticles = this.config.getConfig().particles;
     particlesToggle?.addEventListener('click', () => {
       const newState = !this.config.getConfig().particles;
       this.config.saveConfig({ particles: newState });

@@ -5,18 +5,10 @@ import { StatsManager } from './stats';
 import { ConfigManager } from './config';
 import { SettingsUI } from './components/settings';
 
-interface GameStats {
-  sessions: number;
-  bestScore: number;
-  averageWpm: number;
-}
-
 class TypeStrikeApp {
   private aiCoach: AICoach;
   private stats: StatsManager;
   private config: ConfigManager;
-  private settingsUI: SettingsUI;
-  private canvas: HTMLCanvasElement | null = null;
 
   constructor() {
     // Initialize configuration
@@ -32,7 +24,7 @@ class TypeStrikeApp {
     this.stats = new StatsManager();
 
     // Initialize settings UI
-    this.settingsUI = new SettingsUI(this.config);
+    new SettingsUI(this.config);
 
     // Expose AI coach and config globally for game access
     (window as any).__aiCoach = this.aiCoach;
@@ -70,8 +62,6 @@ class TypeStrikeApp {
     if (!canvas) {
       throw new Error('Canvas element not found');
     }
-
-    this.canvas = canvas;
 
     try {
       // Load game (WASM or fallback)

@@ -1,7 +1,7 @@
 use macroquad::prelude::*;
-use serde::{Deserialize, Serialize};
+use macroquad::rand::gen_range;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct Letter {
     pub char: char,
     pub x: f32,
@@ -74,8 +74,8 @@ pub struct Particle {
 
 impl Particle {
     pub fn new(x: f32, y: f32) -> Self {
-        let angle = rand::random::<f32>() * std::f32::consts::TAU;
-        let speed = 100.0 + rand::random::<f32>() * 200.0;
+        let angle = gen_range(0.0, std::f32::consts::TAU);
+        let speed = gen_range(100.0, 300.0);
 
         Self {
             x,
@@ -84,8 +84,8 @@ impl Particle {
             vy: angle.sin() * speed,
             life: 1.0,
             max_life: 1.0,
-            size: 3.0 + rand::random::<f32>() * 5.0,
-            color: Color::from_rgba(0, 240, 255, 255),
+            size: gen_range(3.0, 8.0),
+            color: Color::new(0.0, 0.94, 1.0, 1.0),
         }
     }
 
@@ -97,8 +97,8 @@ impl Particle {
     }
 
     pub fn draw(&self) {
-        let alpha = (self.life / self.max_life * 255.0) as u8;
-        let color = Color::from_rgba(
+        let alpha = self.life / self.max_life;
+        let color = Color::new(
             self.color.r,
             self.color.g,
             self.color.b,
