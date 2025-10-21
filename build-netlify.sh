@@ -29,8 +29,8 @@ rustup target add wasm32-unknown-unknown
 
 # Install wasm-bindgen-cli if not present
 if ! command -v wasm-bindgen &> /dev/null; then
-    echo "📦 Installing wasm-bindgen-cli..."
-    cargo install wasm-bindgen-cli --version 0.2.87
+    echo "📦 Installing wasm-bindgen-cli (latest version)..."
+    cargo install wasm-bindgen-cli
 else
     echo "✅ wasm-bindgen already installed"
 fi
