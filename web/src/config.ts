@@ -17,28 +17,39 @@ export interface ModelInfo {
 }
 
 // Gemma models - can be hosted locally or loaded from HuggingFace
-// To host locally: Download from https://huggingface.co/litert-community
-// and place in web/public/models/ folder
+//
+// DEPLOYMENT OPTIONS:
+// 1. Local hosting: Download models and place in web/public/models/
+// 2. HuggingFace direct: Use resolve/main URLs (requires CORS, user accepts terms)
+// 3. External CDN: Upload to AWS S3, Cloudflare R2, etc. and update URLs
+//
+// For production deployment, see DEPLOY.md for model hosting solutions
 export const GEMMA_MODELS: Record<GemmaModel, ModelInfo> = {
   'gemma-3n-270m': {
     name: 'Gemma 3n 270M',
     size: '~276MB',
     description: 'Ultra-fast, smallest model - great for quick feedback',
-    url: '/models/gemma3-270m-it-q8-web.task', // Host locally - use the -web.task file!
+    // Local: /models/gemma3-270m-it-q8-web.task
+    // HuggingFace: https://huggingface.co/litert-community/gemma-3-270m-it/resolve/main/gemma3-270m-it-q8-web.task
+    url: '/models/gemma3-270m-it-q8-web.task',
     multimodal: false,
   },
   'gemma-3n-e2b': {
     name: 'Gemma 3n E2B',
     size: '~1.5GB',
     description: 'Good balance of speed and quality (multimodal: text + images + audio)',
-    url: '/models/gemma-3n-E2B-it-int4-Web.litertlm', // Host locally - matches downloaded file
+    // Local: /models/gemma-3n-E2B-it-int4-Web.litertlm
+    // HuggingFace: https://huggingface.co/google/gemma-3n-E2B-it-litert-lm/resolve/main/gemma-3n-E2B-it-int4.litertlm
+    url: '/models/gemma-3n-E2B-it-int4-Web.litertlm',
     multimodal: true,
   },
   'gemma-3n-e4b': {
     name: 'Gemma 3n E4B',
     size: '~3GB',
     description: 'Best all-around model (multimodal: text + images + audio)',
-    url: '/models/gemma-3n-e4b-it-int4-Web.litertlm', // Host locally
+    // Local: /models/gemma-3n-e4b-it-int4-Web.litertlm
+    // HuggingFace: https://huggingface.co/google/gemma-3n-E4B-it-litert-lm/resolve/main/gemma-3n-E4B-it-int4.litertlm
+    url: '/models/gemma-3n-e4b-it-int4-Web.litertlm',
     multimodal: true,
     recommended: true,
   },
@@ -46,14 +57,18 @@ export const GEMMA_MODELS: Record<GemmaModel, ModelInfo> = {
     name: 'Gemma 3 4B',
     size: '~3GB',
     description: 'Alternative 4B variant - text only',
-    url: '/models/Gemma3-4B-IT-int4-Web.litertlm', // Host locally
+    // Local: /models/Gemma3-4B-IT-int4-Web.litertlm
+    // HuggingFace: https://huggingface.co/litert-community/Gemma3-4B-IT/resolve/main/Gemma3-4B-IT-int4-Web.litertlm
+    url: '/models/Gemma3-4B-IT-int4-Web.litertlm',
     multimodal: false,
   },
   'gemma-3-12b': {
     name: 'Gemma 3 12B',
     size: '~8GB',
     description: 'Highest quality, slower - for advanced users only',
-    url: '/models/Gemma3-12B-IT-int4-Web.litertlm', // Host locally
+    // Local: /models/Gemma3-12B-IT-int4-Web.litertlm
+    // HuggingFace: https://huggingface.co/litert-community/Gemma3-12B-IT/resolve/main/Gemma3-12B-IT-int4-Web.litertlm
+    url: '/models/Gemma3-12B-IT-int4-Web.litertlm',
     multimodal: false,
   },
 };

@@ -6,7 +6,7 @@ echo "🚀 Starting Netlify build for TypeStrike..."
 # Check if Rust is installed, if not install it
 if ! command -v rustc &> /dev/null; then
     echo "📦 Installing Rust..."
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.70.0
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
     source $HOME/.cargo/env
 else
     echo "✅ Rust already installed"
@@ -15,10 +15,10 @@ fi
 # Always source cargo env and set default toolchain
 source $HOME/.cargo/env 2>/dev/null || true
 
-# Set default toolchain if not set
+# Set default toolchain to stable (Rust 1.82+) for wasm-bindgen-cli compatibility
 if ! rustup default &> /dev/null; then
     echo "🔧 Setting default Rust toolchain..."
-    rustup default 1.70.0
+    rustup default stable
 fi
 
 echo "✅ Rust version: $(rustc --version)"

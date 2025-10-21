@@ -84,16 +84,119 @@ The `build-netlify.sh` script:
 
 ## Important Notes
 
-### Model Files
+### Model Files - CRITICAL FOR DEPLOYMENT
 
-⚠️ **Gemma model files are NOT included in the deployment** (they're too large for Git).
+⚠️ **Gemma model files are NOT included in Git** (they're 276MB to 8GB in size).
 
-Users will need to download models manually after deployment. The app will show instructions on first load.
+**This is the core feature of TypeStrike** - without models, users cannot use the AI coach.
 
-To host models:
-1. Upload models to Netlify's CDN or external storage
-2. Update `web/src/config.ts` with new URLs
-3. Rebuild and redeploy
+You have **3 options** for hosting models in production:
+
+#### Option 1: HuggingFace Direct URLs (Recommended for Testing)
+
+**Pros**: No hosting costs, easy setup, always up-to-date
+**Cons**: Requires user to accept Google's terms on HuggingFace, may be slower
+
+Update `web/src/config.ts` to use HuggingFace URLs:
+
+```typescript
+'gemma-3n-e2b': {
+  name: 'Gemma 3n E2B',
+  size: '~1.5GB',
+  description: 'Good balance of speed and quality (multimodal)',
+  url: 'https://huggingface.co/google/gemma-3n-E2B-it-litert-lm/resolve/main/gemma-3n-E2B-it-int4.litertlm',
+  multimodal: true,
+},
+```
+
+**All HuggingFace URLs:**
+- 270M: `https://huggingface.co/litert-community/gemma-3-270m-it/resolve/main/gemma3-270m-it-q8-web.task`
+- E2B (1.5GB): `https://huggingface.co/google/gemma-3n-E2B-it-litert-lm/resolve/main/gemma-3n-E2B-it-int4.litertlm`
+- E4B (3GB): `https://huggingface.co/google/gemma-3n-E4B-it-litert-lm/resolve/main/gemma-3n-E4B-it-int4.litertlm`
+- 4B: `https://huggingface.co/litert-community/Gemma3-4B-IT/resolve/main/Gemma3-4B-IT-int4-Web.litertlm`
+- 12B: `https://huggingface.co/litert-community/Gemma3-12B-IT/resolve/main/Gemma3-12B-IT-int4-Web.litertlm`
+
+Then rebuild: `npm run build`
+
+#### Option 2: External CDN (Recommended for Production)
+
+**Pros**: Fast, reliable, you control the files
+**Cons**: Small hosting cost (~$1-5/month for bandwidth)
+
+**Step-by-step with Cloudflare R2 (Free tier: 10GB storage, 10M requests/month):**
+
+1. **Create Cloudflare R2 bucket:**
+   - Go to https://dash.cloudflare.com/
+   - Navigate to R2 Object Storage
+   - Create a bucket (e.g., `typestrike-models`)
+   - Enable Public Access
+
+2. **Download models locally:**
+   ```bash
+   cd web/public/models
+
+   # Download E2B (recommended starting model - 1.5GB)
+   wget https://huggingface.co/google/gemma-3n-E2B-it-litert-lm/resolve/main/gemma-3n-E2B-it-int4.litertlm
+
+   # Download E4B (best quality - 3GB)
+   wget https://huggingface.co/google/gemma-3n-E4B-it-litert-lm/resolve/main/gemma-3n-E4B-it-int4.litertlm
+   ```
+
+3. **Upload to R2:**
+   ```bash
+   # Use Cloudflare dashboard or rclone
+   # Upload: gemma-3n-E2B-it-int4.litertlm
+   # Upload: gemma-3n-E4B-it-int4.litertlm
+   ```
+
+4. **Get public URLs** from R2 dashboard (e.g., `https://pub-xxxxx.r2.dev/gemma-3n-E2B-it-int4.litertlm`)
+
+5. **Update config.ts:**
+   ```typescript
+   'gemma-3n-e2b': {
+     name: 'Gemma 3n E2B',
+     size: '~1.5GB',
+     description: 'Good balance of speed and quality (multimodal)',
+     url: 'https://pub-xxxxx.r2.dev/gemma-3n-E2B-it-int4.litertlm',
+     multimodal: true,
+   },
+   ```
+
+6. **Rebuild and deploy:**
+   ```bash
+   npm run build
+   git add . && git commit -m "Update model URLs to Cloudflare R2"
+   git push
+   ```
+
+**Alternative CDN providers:**
+- **AWS S3** ($0.09/GB storage + $0.09/GB transfer)
+- **Google Cloud Storage** ($0.02/GB storage + $0.12/GB transfer)
+- **Backblaze B2** ($0.005/GB storage + free egress with Cloudflare)
+
+#### Option 3: Netlify Large Media (Git LFS)
+
+**Pros**: Models stored with code, easy to version
+**Cons**: Expensive ($19/month Pro plan required for large files)
+
+1. Install Netlify Large Media: `netlify lm:install`
+2. Track model files: `git lfs track "*.litertlm" "*.task"`
+3. Add and commit models to Git
+4. Push to GitHub
+
+**Not recommended** due to cost, but works if you're already on Netlify Pro.
+
+---
+
+### Recommended Deployment Strategy
+
+For production, we recommend **Option 2 (Cloudflare R2)** with the following setup:
+
+1. Host **E2B model (1.5GB)** as the default - good balance of quality and speed
+2. Optionally host **270M model (276MB)** for users on slower connections
+3. Let users download larger models (E4B, 12B) manually if needed
+
+This gives users immediate AI coaching while keeping bandwidth costs low (~$2-3/month).
 
 ### Environment Variables
 
@@ -146,24 +249,36 @@ Check that:
 
 ### Model files 404
 
-This is expected! Models must be downloaded locally by users.
+This happens when model URLs are set to `/models/...` (local paths) but files aren't hosted.
 
-To fix:
-1. Host models on external CDN
-2. Update `GEMMA_MODELS` URLs in `web/src/config.ts`
-3. Redeploy
+**Quick fix for testing** - Use HuggingFace direct URLs:
+1. Edit `web/src/config.ts`
+2. Change URLs from `/models/...` to HuggingFace `resolve/main` URLs (see "Option 1" above)
+3. Rebuild: `npm run build`
+4. Push to GitHub
+
+**Production fix** - Host on CDN:
+1. See "Model Files - CRITICAL FOR DEPLOYMENT" section above
+2. Follow Option 2 (Cloudflare R2) for best results
+3. Update config.ts with your CDN URLs
+4. Redeploy
 
 ## Deployment Checklist
 
 Before deploying to production:
 
+- [ ] **CRITICAL: Set up model hosting** (see "Model Files" section above)
+  - [ ] Choose hosting option (HuggingFace/CDN/Git LFS)
+  - [ ] Update `web/src/config.ts` with model URLs
+  - [ ] Test model loading locally
 - [ ] Test locally: `npm run build && npm run preview`
 - [ ] Commit all changes to Git
 - [ ] Push to GitHub
 - [ ] Connect repository to Netlify
 - [ ] Verify build settings in Netlify dashboard
 - [ ] Deploy!
-- [ ] Test deployed site
+- [ ] Test deployed site (especially AI coach functionality)
+- [ ] Verify models load correctly in production
 - [ ] Configure custom domain (optional)
 - [ ] Set up branch deploys for preview (optional)
 
