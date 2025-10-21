@@ -1,0 +1,38 @@
+{
+  "name": "typestrike",
+  "version": "1.0.0",
+  "description": "AI-powered browser-based typing trainer game with Gemma 3 multimodal support",
+  "private": true,
+  "scripts": {
+    "dev": "cd web && npm run dev",
+    "build": "chmod +x build-netlify.sh && ./build-netlify.sh",
+    "build:wasm": "cd rust-game && chmod +x build.sh && ./build.sh",
+    "build:web": "cd web && npm run build",
+    "preview": "cd web && npm run preview",
+    "install:all": "cd web && npm install",
+    "clean": "rm -rf web/dist web/node_modules rust-game/target",
+    "deploy": "netlify deploy --prod",
+    "deploy:preview": "netlify deploy"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fenago/typestrike.git"
+  },
+  "keywords": [
+    "typing",
+    "game",
+    "education",
+    "ai",
+    "gemma",
+    "mediapipe",
+    "webassembly",
+    "rust",
+    "typescript"
+  ],
+  "author": "fenago",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

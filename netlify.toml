@@ -1,0 +1,73 @@
+[build]
+  # Build command that will run on Netlify
+  command = "chmod +x build-netlify.sh && ./build-netlify.sh"
+
+  # Directory to publish (output of the build)
+  publish = "web/dist"
+
+  # Base directory for the build
+  base = "."
+
+# Environment variables for the build
+[build.environment]
+  NODE_VERSION = "18"
+  RUST_VERSION = "1.70.0"
+
+# Redirects for Single Page Application routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
+  conditions = {Role = ["public"]}
+
+# Headers for proper WASM and asset serving
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "*.wasm"
+  [headers.values]
+    Content-Type = "application/wasm"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/models/*"
+  [headers.values]
+    # Model files can be cached for a long time
+    Cache-Control = "public, max-age=31536000, immutable"
+    # CORS headers for model files
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "*.litertlm"
+  [headers.values]
+    Content-Type = "application/octet-stream"
+    Cache-Control = "public, max-age=31536000, immutable"
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "*.task"
+  [headers.values]
+    Content-Type = "application/octet-stream"
+    Cache-Control = "public, max-age=31536000, immutable"
+    Access-Control-Allow-Origin = "*"
+
+# Plugin for Rust installation (optional - if build fails, try this)
+# [[plugins]]
+#   package = "@netlify/plugin-rust"
