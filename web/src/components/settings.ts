@@ -311,12 +311,12 @@ export class SettingsUI {
           </div>
           <div class="setting-control">
             <select id="gemma-model-select">
-              <option value="gemma-3n-270m" ${currentConfig.gemmaModel === 'gemma-3n-270m' ? 'selected' : ''}>Gemma 3n 270M (~200MB)</option>
-              <option value="gemma-3n-e2b" ${currentConfig.gemmaModel === 'gemma-3n-e2b' ? 'selected' : ''}>Gemma 3n E2B (~1.5GB)</option>
-              <option value="gemma-3n-e4b" ${currentConfig.gemmaModel === 'gemma-3n-e4b' ? 'selected' : ''}>Gemma 3n E4B ⭐ (~3GB)</option>
-              <option value="gemma-3-4b" ${currentConfig.gemmaModel === 'gemma-3-4b' ? 'selected' : ''}>Gemma 3 4B (~3GB)</option>
-              <option value="gemma-3-12b" ${currentConfig.gemmaModel === 'gemma-3-12b' ? 'selected' : ''}>Gemma 3 12B (~8GB)</option>
+              <option value="gemma-3n-270m" ${currentConfig.gemmaModel === 'gemma-3n-270m' ? 'selected' : ''}>Gemma 3n 270M (~276MB) - Fast</option>
+              <option value="gemma-3n-e2b" ${currentConfig.gemmaModel === 'gemma-3n-e2b' ? 'selected' : ''}>Gemma 3n E2B (~1.5GB) - Multimodal ⭐</option>
             </select>
+          </div>
+          <div style="font-size: 11px; color: #888; margin-top: 5px; padding-left: 10px;">
+            ✅ Both models hosted on Cloudflare R2 CDN
           </div>
         </div>
 

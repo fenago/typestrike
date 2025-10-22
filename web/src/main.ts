@@ -103,12 +103,10 @@ class TypeStrikeApp {
       });
 
       aiStatus.className = 'ready';
-      aiStatus.textContent = `🤖 ${modelName} ready!`;
+      aiStatus.textContent = `🤖 ${modelName}`;
 
-      // Hide after 3 seconds
-      setTimeout(() => {
-        if (aiStatus) aiStatus.style.display = 'none';
-      }, 3000);
+      // Keep visible to show active model
+      aiStatus.style.display = 'block';
 
     } catch (error) {
       console.warn('AI initialization failed (continuing without AI):', error);
