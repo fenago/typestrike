@@ -16,31 +16,29 @@ export interface ModelInfo {
   recommended?: boolean;
 }
 
-// Gemma models - can be hosted locally or loaded from HuggingFace
+// Gemma models - hosted on Cloudflare R2 CDN for on-demand loading
 //
-// DEPLOYMENT OPTIONS:
-// 1. Local hosting: Download models and place in web/public/models/
-// 2. HuggingFace direct: Use resolve/main URLs (requires CORS, user accepts terms)
-// 3. External CDN: Upload to AWS S3, Cloudflare R2, etc. and update URLs
+// PRODUCTION: Using Cloudflare R2 (free tier: 10GB storage, 10M requests/month)
+// Models are downloaded on-demand when user selects them in settings.
+// Cached in browser after first download for instant subsequent loads.
 //
-// For production deployment, see DEPLOY.md for model hosting solutions
+// CDN: https://pub-8f8063a5b7fd42c1bf158b9ba33997d5.r2.dev/
+// For local development, you can download models to web/public/models/
 export const GEMMA_MODELS: Record<GemmaModel, ModelInfo> = {
   'gemma-3n-270m': {
     name: 'Gemma 3n 270M',
     size: '~276MB',
     description: 'Ultra-fast, smallest model - great for quick feedback',
-    // Local: /models/gemma3-270m-it-q8-web.task
-    // HuggingFace: https://huggingface.co/litert-community/gemma-3-270m-it/resolve/main/gemma3-270m-it-q8-web.task
-    url: '/models/gemma3-270m-it-q8-web.task',
+    // Cloudflare R2 CDN - loads on demand
+    url: 'https://pub-8f8063a5b7fd42c1bf158b9ba33997d5.r2.dev/gemma3-270m-it-q8-web.task',
     multimodal: false,
   },
   'gemma-3n-e2b': {
     name: 'Gemma 3n E2B',
     size: '~1.5GB',
     description: 'Good balance of speed and quality (multimodal: text + images + audio)',
-    // Local: /models/gemma-3n-E2B-it-int4-Web.litertlm
-    // HuggingFace: https://huggingface.co/google/gemma-3n-E2B-it-litert-lm/resolve/main/gemma-3n-E2B-it-int4.litertlm
-    url: '/models/gemma-3n-E2B-it-int4-Web.litertlm',
+    // Cloudflare R2 CDN - loads on demand
+    url: 'https://pub-8f8063a5b7fd42c1bf158b9ba33997d5.r2.dev/gemma-3n-E2B-it-int4-Web.litertlm',
     multimodal: true,
   },
   'gemma-3n-e4b': {
