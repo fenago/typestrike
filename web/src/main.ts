@@ -74,10 +74,17 @@ class TypeStrikeApp {
 
   private async initAI() {
     const aiStatus = document.getElementById('ai-status');
+    if (!aiStatus) return;
+
     const { aiMode } = this.config.getConfig();
 
-    if (!aiStatus || aiMode === 'disabled') {
-      if (aiStatus) aiStatus.style.display = 'none';
+    // Always show status - make it clear what's configured
+    aiStatus.style.display = 'block';
+
+    // If AI is disabled, show that clearly
+    if (aiMode === 'disabled') {
+      aiStatus.className = 'disabled';
+      aiStatus.textContent = '🤖 AI Coach: Disabled';
       return;
     }
 
@@ -103,18 +110,12 @@ class TypeStrikeApp {
       });
 
       aiStatus.className = 'ready';
-      aiStatus.textContent = `🤖 ${modelName}`;
-
-      // Keep visible to show active model
-      aiStatus.style.display = 'block';
+      aiStatus.textContent = `🤖 ${modelName} ✓`;
 
     } catch (error) {
       console.warn('AI initialization failed (continuing without AI):', error);
-      aiStatus.className = '';
-      aiStatus.textContent = `⚠️ ${modelName} failed to load (using fallback)`;
-      setTimeout(() => {
-        if (aiStatus) aiStatus.style.display = 'none';
-      }, 5000);
+      aiStatus.className = 'error';
+      aiStatus.textContent = `⚠️ ${modelName} - Failed (using fallback)`;
     }
   }
 

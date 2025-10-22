@@ -25,9 +25,9 @@ export class AICoach {
   private mode: AIMode;
   private gemmaModel: GemmaModel;
 
-  constructor(config: AIConfig = { mode: 'mediapipe', gemmaModel: 'gemma-3n-e4b' }) {
+  constructor(config: AIConfig = { mode: 'mediapipe', gemmaModel: 'gemma-3n-270m' }) {
     this.mode = config.mode;
-    this.gemmaModel = config.gemmaModel || 'gemma-3n-e4b';
+    this.gemmaModel = config.gemmaModel || 'gemma-3n-270m';
   }
 
   async init(onProgress?: (progress: number, status?: string) => void): Promise<void> {
