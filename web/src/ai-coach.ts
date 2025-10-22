@@ -79,7 +79,7 @@ export class AICoach {
         baseOptions: {
           modelAssetPath: modelInfo.url
         },
-        maxTokens: 100,      // Shorter for concise feedback
+        maxTokens: 256,      // Total tokens (input + output)
         topK: 20,            // More focused responses
         temperature: 0.7,    // Less randomness
         randomSeed: Math.floor(Math.random() * 10000),
@@ -176,16 +176,9 @@ export class AICoach {
 
   private async getMediaPipeFeedback(prompt: string): Promise<string> {
     try {
-      // Gemma chat template format
-      const systemPrompt = `You are TypeBot, a helpful and encouraging typing coach. Give brief, specific feedback in 2-3 sentences. Be positive and actionable.`;
-
-      // Use proper Gemma 3 chat template
+      // Use proper Gemma 3 chat template - keep it short for token budget
       const fullPrompt = `<start_of_turn>user
-${systemPrompt}
-
-${prompt}
-
-Give me encouraging feedback about my typing performance in 2-3 sentences.<end_of_turn>
+You are TypeBot, an encouraging typing coach. ${prompt}<end_of_turn>
 <start_of_turn>model
 `;
 
@@ -236,22 +229,10 @@ Give me encouraging feedback about my typing performance in 2-3 sentences.<end_o
 
   private generateFeedbackPrompt(stats: SessionStats): string {
     const improvement = stats.wpm - stats.previousWpm;
-    const improvementText = improvement > 0
-      ? `+${improvement.toFixed(1)}`
-      : improvement.toFixed(1);
+    const improvementText = improvement > 0 ? `+${improvement.toFixed(1)}` : improvement.toFixed(1);
 
-    return `
-Session Performance:
-- Duration: ${stats.duration}s
-- Letters typed: ${stats.total}
-- Accuracy: ${stats.accuracy}%
-- WPM: ${stats.wpm}
-- Weak letters (< 85%): ${stats.weakLetters.join(', ') || 'None'}
-- Previous WPM: ${stats.previousWpm}
-- Improvement: ${improvementText} WPM
-
-Provide encouraging feedback highlighting one strength and one specific tip for improvement.
-    `.trim();
+    // Keep prompt very short to fit in token budget
+    return `Typed ${stats.total} letters, ${stats.accuracy}% accuracy, ${stats.wpm.toFixed(1)} WPM (${improvementText} vs last session). Give brief, encouraging feedback.`;
   }
 
   private getFallbackFeedback(stats: SessionStats): string {
