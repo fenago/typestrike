@@ -4,6 +4,7 @@ import { AICoach } from './ai-coach';
 import { StatsManager } from './stats';
 import { ConfigManager } from './config';
 import { SettingsUI } from './components/settings';
+import { achievementManager } from './achievements';
 
 class TypeStrikeApp {
   private aiCoach: AICoach;
@@ -44,7 +45,11 @@ class TypeStrikeApp {
 
       // Load stats
       await this.stats.init();
-      this.updateLoadingProgress(20, 'Loading game data...');
+      this.updateLoadingProgress(15, 'Loading stats...');
+
+      // Initialize achievements
+      await achievementManager.init();
+      this.updateLoadingProgress(25, 'Loading achievements...');
 
       // Initialize WASM game
       await this.initGame();

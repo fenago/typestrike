@@ -1,6 +1,7 @@
 // Pure JavaScript/Canvas game implementation (fallback when WASM not available)
 
 import { audioManager } from './audio';
+import { achievementManager } from './achievements';
 
 interface Letter {
   char: string;
@@ -71,6 +72,8 @@ export class GameFallback {
   private currentWordInput = '';  // Track multi-character input for words
   private easterEggBuffer = '';   // Track last few keys for easter egg detection
   private activeEasterEggs: Set<string> = new Set();  // Currently active easter eggs
+  private wordsTypedThisSession = 0;  // Track words for achievements
+  private maxComboThisSession = 0;    // Track best combo for achievements
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -440,6 +443,12 @@ export class GameFallback {
       // Reset word input on success
       if (isWordMatch) {
         this.currentWordInput = '';
+        this.wordsTypedThisSession++;
+      }
+
+      // Track max combo
+      if (this.combo > this.maxComboThisSession) {
+        this.maxComboThisSession = this.combo;
       }
 
       // More particles for words
@@ -512,7 +521,8 @@ export class GameFallback {
     // Show easter egg message
     console.log(`🎉 EASTER EGG: ${message}`);
 
-    // Could add visual notification here
+    // Track for achievements
+    achievementManager.checkEasterEgg();
   }
 
   private createParticle(x: number, y: number): Particle {
@@ -585,13 +595,24 @@ export class GameFallback {
     const accuracy = this.totalCount > 0
       ? Math.floor((this.correctCount / this.totalCount) * 100)
       : 100;
+    const wpm = this.calculateWPM();
 
     await statsManager.recordSession({
       score: this.score,
-      wpm: this.calculateWPM(),
+      wpm: wpm,
       accuracy: accuracy,
       level: this.level.name,
       duration: Math.round(this.levelTimer),
+    });
+
+    // Check achievements
+    await achievementManager.checkSessionAchievements({
+      wpm: wpm,
+      accuracy: accuracy,
+      level: this.level.number,
+      combo: this.maxComboThisSession,
+      totalLetters: this.totalCount,
+      wordsTyped: this.wordsTypedThisSession,
     });
 
     // Trigger stats refresh in UI
