@@ -23,16 +23,21 @@ interface Particle {
 
 interface Level {
   id: string;
+  number: number;
   name: string;
   letters: string[];
+  words?: string[];  // Optional words for advanced levels
   fallSpeed: number;
   spawnRate: number;
   duration: number;
   description: string;
+  hint: string;  // AI hint shown before level
+  easterEgg?: string;  // Hidden surprise for this level
 }
 
 enum GameState {
   Menu,
+  LevelStart,  // Show hint before level begins
   Playing,
   LevelComplete,
   GameOver,
@@ -75,50 +80,246 @@ export class GameFallback {
 
   private getLevel(num: number): Level {
     const levels: Level[] = [
+      // HOME ROW (Levels 1-4)
       {
         id: '1-1',
+        number: 1,
         name: 'Home Row: F & J',
         letters: ['F', 'J'],
         fallSpeed: 100,
         spawnRate: 2.0,
         duration: 30,
         description: 'Place your index fingers on F and J!',
+        hint: 'Keep your fingers on the home row bumps. Feel the small ridges on F and J? Those are your home base!',
       },
       {
         id: '1-2',
+        number: 2,
         name: 'Home Row: D & K',
         letters: ['F', 'J', 'D', 'K'],
         fallSpeed: 110,
         spawnRate: 1.8,
         duration: 30,
         description: 'Add your middle fingers on D and K.',
+        hint: 'Middle fingers control D and K. Keep all four fingers hovering just above the keys.',
       },
       {
         id: '1-3',
+        number: 3,
         name: 'Home Row: S & L',
         letters: ['F', 'J', 'D', 'K', 'S', 'L'],
         fallSpeed: 120,
         spawnRate: 1.6,
         duration: 30,
         description: 'Ring fingers on S and L.',
+        hint: 'Ring fingers are weaker - that\'s normal! Practice makes perfect.',
+        easterEgg: 'Type "SOS" quickly to activate a shield!',
       },
       {
         id: '1-4',
+        number: 4,
         name: 'Full Home Row',
         letters: ['A', 'S', 'D', 'F', 'J', 'K', 'L', ';'],
         fallSpeed: 140,
         spawnRate: 1.3,
         duration: 60,
         description: 'Master the home row!',
+        hint: 'All 8 home row keys! Keep your wrists straight and fingers curved.',
       },
+
+      // UPPER ROW (Levels 5-8)
       {
         id: '2-1',
+        number: 5,
         name: 'Upper Row: R & U',
         letters: ['A', 'S', 'D', 'F', 'J', 'K', 'L', ';', 'R', 'U'],
         fallSpeed: 150,
         spawnRate: 1.2,
         duration: 45,
         description: 'Index fingers reach up to R and U.',
+        hint: 'Reach up with your index fingers. Return to home row after each key.',
+      },
+      {
+        id: '2-2',
+        number: 6,
+        name: 'Upper Row: E & I',
+        letters: ['A', 'S', 'D', 'F', 'J', 'K', 'L', ';', 'R', 'U', 'E', 'I'],
+        fallSpeed: 160,
+        spawnRate: 1.1,
+        duration: 45,
+        description: 'Middle fingers reach for E and I.',
+        hint: 'E and I are directly above D and K. Small reach, quick return!',
+      },
+      {
+        id: '2-3',
+        number: 7,
+        name: 'Upper Row: W & O',
+        letters: ['A', 'S', 'D', 'F', 'J', 'K', 'L', ';', 'R', 'U', 'E', 'I', 'W', 'O'],
+        fallSpeed: 170,
+        spawnRate: 1.0,
+        duration: 45,
+        description: 'Ring fingers stretch to W and O.',
+        hint: 'Bigger stretch for ring fingers! Keep your palms steady.',
+        easterEgg: 'Type "WOW" for a surprise combo boost!',
+      },
+      {
+        id: '2-4',
+        number: 8,
+        name: 'Full Upper Row',
+        letters: ['A', 'S', 'D', 'F', 'J', 'K', 'L', ';', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+        fallSpeed: 180,
+        spawnRate: 0.9,
+        duration: 60,
+        description: 'Complete upper row mastery!',
+        hint: 'Q, T, Y, and P added! Pinky fingers get a workout.',
+      },
+
+      // LOWER ROW (Levels 9-11)
+      {
+        id: '3-1',
+        number: 9,
+        name: 'Lower Row: V & M',
+        letters: ['F', 'J', 'V', 'M'],
+        fallSpeed: 190,
+        spawnRate: 1.5,
+        duration: 40,
+        description: 'Index fingers drop to V and M.',
+        hint: 'Reach down this time! V and M are below F and J.',
+      },
+      {
+        id: '3-2',
+        number: 10,
+        name: 'Lower Row: C & ,',
+        letters: ['F', 'J', 'V', 'M', 'C', ','],
+        fallSpeed: 200,
+        spawnRate: 1.3,
+        duration: 40,
+        description: 'Middle fingers reach for C and comma.',
+        hint: 'The comma key is lower-right. Practice finding it without looking!',
+      },
+      {
+        id: '3-3',
+        number: 11,
+        name: 'Full Lower Row',
+        letters: ['Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/'],
+        fallSpeed: 210,
+        spawnRate: 1.0,
+        duration: 60,
+        description: 'Master all lower keys!',
+        hint: 'Z and slash (/) use your pinkies. Take your time!',
+        easterEgg: 'Type "ZEN" to enter focus mode!',
+      },
+
+      // ALL LETTERS (Levels 12-13)
+      {
+        id: '4-1',
+        number: 12,
+        name: 'All Letters Mixed',
+        letters: ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'],
+        fallSpeed: 220,
+        spawnRate: 0.8,
+        duration: 90,
+        description: 'Every letter on the keyboard!',
+        hint: 'Random letters from the full alphabet. Stay calm and trust your muscle memory.',
+      },
+      {
+        id: '4-2',
+        number: 13,
+        name: 'Speed Challenge',
+        letters: ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'],
+        fallSpeed: 250,
+        spawnRate: 0.6,
+        duration: 60,
+        description: 'Fast-paced letter assault!',
+        hint: 'Speed test! Focus on accuracy first, speed will follow.',
+      },
+
+      // NUMBERS (Levels 14-16)
+      {
+        id: '5-1',
+        number: 14,
+        name: 'Numbers: 1-5',
+        letters: ['1', '2', '3', '4', '5'],
+        fallSpeed: 180,
+        spawnRate: 1.5,
+        duration: 40,
+        description: 'Top row numbers, left hand.',
+        hint: 'Numbers require reaching up high. Use your pinky to ring finger.',
+      },
+      {
+        id: '5-2',
+        number: 15,
+        name: 'Numbers: 6-0',
+        letters: ['6', '7', '8', '9', '0'],
+        fallSpeed: 180,
+        spawnRate: 1.5,
+        duration: 40,
+        description: 'Top row numbers, right hand.',
+        hint: 'Right hand numbers! 0 is where your right pinky reaches.',
+      },
+      {
+        id: '5-3',
+        number: 16,
+        name: 'All Numbers',
+        letters: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+        fallSpeed: 200,
+        spawnRate: 1.2,
+        duration: 60,
+        description: 'Full number row!',
+        hint: 'Practice numbers for coding and data entry. Very useful skill!',
+        easterEgg: 'Type "007" for secret agent mode!',
+      },
+
+      // WORDS (Levels 17-20)
+      {
+        id: '6-1',
+        number: 17,
+        name: 'Common Words',
+        letters: ['T','H','E','A','N','D','I','S','O','F'],
+        words: ['the', 'and', 'is', 'of', 'to', 'in', 'it', 'you', 'that', 'he', 'was', 'for'],
+        fallSpeed: 160,
+        spawnRate: 1.8,
+        duration: 60,
+        description: 'Type complete words!',
+        hint: 'Whole words now! Type them quickly - they\'re worth bonus points!',
+      },
+      {
+        id: '6-2',
+        number: 18,
+        name: 'Action Words',
+        letters: ['R','U','N','J','M','P','F','L','Y'],
+        words: ['run', 'jump', 'fly', 'code', 'type', 'play', 'move', 'stop', 'go', 'win'],
+        fallSpeed: 180,
+        spawnRate: 1.5,
+        duration: 60,
+        description: 'Action verbs for speed!',
+        hint: 'Action words! Type them fast to match the energy!',
+        easterEgg: 'Type "RUSH" during combo to trigger turbo mode!',
+      },
+      {
+        id: '6-3',
+        number: 19,
+        name: 'Tech Words',
+        letters: ['C','O','D','E','B','U','G','A','P','I'],
+        words: ['code', 'bug', 'api', 'git', 'dev', 'web', 'app', 'data', 'test', 'debug'],
+        fallSpeed: 200,
+        spawnRate: 1.3,
+        duration: 60,
+        description: 'Programming vocabulary!',
+        hint: 'Tech terms! Perfect for developers. Every word builds coding muscle memory!',
+      },
+      {
+        id: '6-4',
+        number: 20,
+        name: 'Ultimate Challenge',
+        letters: ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0'],
+        words: ['the', 'quick', 'brown', 'fox', 'jumps', 'over', 'lazy', 'dog', 'code', 'ninja', 'master', 'level'],
+        fallSpeed: 280,
+        spawnRate: 0.5,
+        duration: 120,
+        description: 'Everything you\'ve learned!',
+        hint: 'Final boss! Letters, numbers, and words. Show everything you\'ve mastered!',
+        easterEgg: 'Type "GODMODE" for invincibility!',
       },
     ];
 
@@ -129,11 +330,15 @@ export class GameFallback {
     document.addEventListener('keydown', (e) => {
       if (this.state === GameState.Menu) {
         if (e.code === 'Space' || e.code === 'Enter') {
+          this.state = GameState.LevelStart; // Show hint first
+        }
+      } else if (this.state === GameState.LevelStart) {
+        if (e.code === 'Space' || e.code === 'Enter') {
           this.startGame();
         }
       } else if (this.state === GameState.Playing) {
         const key = e.key.toUpperCase();
-        if (/^[A-Z;]$/.test(key)) {
+        if (/^[A-Z0-9;,./]$/.test(key)) { // Added numbers and punctuation
           this.handleLetterTyped(key);
         }
       } else if (this.state === GameState.LevelComplete) {
@@ -144,7 +349,9 @@ export class GameFallback {
         }
       } else if (this.state === GameState.GameOver) {
         if (e.code === 'Space' || e.key.toLowerCase() === 'r') {
-          this.startGame();
+          this.currentLevel = 0;
+          this.level = this.getLevel(0);
+          this.state = GameState.LevelStart;
         } else if (e.key.toLowerCase() === 'm') {
           this.state = GameState.Menu;
         }
@@ -167,9 +374,9 @@ export class GameFallback {
 
   private nextLevel() {
     this.currentLevel++;
-    if (this.currentLevel >= 5) this.currentLevel = 4;
+    if (this.currentLevel >= 20) this.currentLevel = 19; // 20 levels total
     this.level = this.getLevel(this.currentLevel);
-    this.startGame();
+    this.state = GameState.LevelStart; // Show hint before starting
   }
 
   private handleLetterTyped(char: string) {
@@ -423,6 +630,8 @@ export class GameFallback {
     // Draw based on state
     if (this.state === GameState.Menu) {
       this.drawMenu();
+    } else if (this.state === GameState.LevelStart) {
+      this.drawLevelStart();
     } else {
       this.drawStarfield();
       this.drawParticles();
@@ -575,7 +784,7 @@ export class GameFallback {
     ctx.textAlign = 'right';
     ctx.fillStyle = 'skyblue';
     ctx.font = '20px "Courier New", monospace';
-    ctx.fillText(`Level: ${this.level.name}`, this.canvas.width - margin, margin);
+    ctx.fillText(`Level ${this.level.number}: ${this.level.name}`, this.canvas.width - margin, margin);
 
     // Timer
     const timeLeft = Math.max(0, this.level.duration - this.levelTimer);
@@ -648,6 +857,52 @@ export class GameFallback {
     ctx.fillStyle = 'gray';
     ctx.font = '20px "Courier New", monospace';
     ctx.fillText('Type the falling letters to destroy them!', cx, cy + 120);
+  }
+
+  private drawLevelStart() {
+    const ctx = this.ctx;
+    const cx = this.canvas.width / 2;
+    const cy = this.canvas.height / 2;
+
+    // Background
+    ctx.fillStyle = 'rgb(10, 14, 39)';
+    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // Level number and name
+    ctx.fillStyle = 'rgb(0,240,255)';
+    ctx.font = 'bold 50px "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`LEVEL ${this.level.number}`, cx, cy - 120);
+
+    ctx.fillStyle = 'rgb(255,0,110)';
+    ctx.font = '30px "Courier New", monospace';
+    ctx.fillText(this.level.name, cx, cy - 70);
+
+    // Description
+    ctx.fillStyle = 'white';
+    ctx.font = '20px "Courier New", monospace';
+    ctx.fillText(this.level.description, cx, cy - 30);
+
+    // AI Hint
+    ctx.fillStyle = '#00f0ff';
+    ctx.font = 'italic 18px "Courier New", monospace';
+    const hintLines = this.wrapText(this.level.hint, 600);
+    hintLines.forEach((line, i) => {
+      ctx.fillText(line, cx, cy + 10 + i * 25);
+    });
+
+    // Easter egg hint (if exists)
+    if (this.level.easterEgg) {
+      ctx.fillStyle = 'rgba(255,215,0,0.6)';
+      ctx.font = '14px "Courier New", monospace';
+      ctx.fillText(`✨ Secret: ${this.level.easterEgg}`, cx, cy + 80);
+    }
+
+    // Start prompt
+    ctx.fillStyle = 'lime';
+    ctx.font = '25px "Courier New", monospace';
+    ctx.fillText('Press SPACE when ready!', cx, cy + 130);
   }
 
   private drawLevelComplete() {
