@@ -43,11 +43,10 @@ export const GEMMA_MODELS: Record<GemmaModel, ModelInfo> = {
   },
   'gemma-3n-e4b': {
     name: 'Gemma 3n E4B',
-    size: '~3GB',
+    size: '~1.5GB',
     description: 'Best all-around model (multimodal: text + images + audio)',
-    // Local: /models/gemma-3n-e4b-it-int4-Web.litertlm
-    // HuggingFace: https://huggingface.co/google/gemma-3n-E4B-it-litert-lm/resolve/main/gemma-3n-E4B-it-int4.litertlm
-    url: '/models/gemma-3n-e4b-it-int4-Web.litertlm',
+    // Cloudflare R2 CDN - loads on demand
+    url: 'https://pub-8f8063a5b7fd42c1bf158b9ba33997d5.r2.dev/gemma-3n-E4B-it-int4-Web.litertlm',
     multimodal: true,
     recommended: true,
   },
