@@ -2,6 +2,7 @@
 
 import { audioManager } from './audio';
 import { achievementManager } from './achievements';
+import { shareManager } from './share';
 
 interface Letter {
   char: string;
@@ -353,6 +354,8 @@ export class GameFallback {
           this.nextLevel();
         } else if (e.key.toLowerCase() === 'm') {
           this.state = GameState.Menu;
+        } else if (e.key.toLowerCase() === 's') {
+          this.shareScore(true);
         }
       } else if (this.state === GameState.GameOver) {
         if (e.code === 'Space' || e.key.toLowerCase() === 'r') {
@@ -361,6 +364,8 @@ export class GameFallback {
           this.state = GameState.LevelStart;
         } else if (e.key.toLowerCase() === 'm') {
           this.state = GameState.Menu;
+        } else if (e.key.toLowerCase() === 's') {
+          this.shareScore(false);
         }
       }
     });
@@ -523,6 +528,40 @@ export class GameFallback {
 
     // Track for achievements
     achievementManager.checkEasterEgg();
+  }
+
+  private async shareScore(completed: boolean) {
+    const accuracy = this.totalCount > 0
+      ? Math.floor((this.correctCount / this.totalCount) * 100)
+      : 100;
+
+    const scoreData = {
+      levelNumber: this.level.number,
+      levelName: this.level.name,
+      score: this.score,
+      wpm: this.calculateWPM(),
+      accuracy: accuracy,
+      combo: this.maxComboThisSession,
+      completed: completed,
+    };
+
+    // Try native share API first (mobile)
+    const shared = await shareManager.share(scoreData);
+    if (shared) {
+      console.log('✓ Shared via native API');
+      return;
+    }
+
+    // Fallback: copy text and show notification
+    const copied = await shareManager.copyText(scoreData);
+    if (copied) {
+      console.log('✓ Score copied to clipboard!');
+      alert('Score copied to clipboard! Share it with your friends!');
+    } else {
+      // Final fallback: download image
+      shareManager.downloadImage(scoreData);
+      console.log('✓ Score image downloaded!');
+    }
   }
 
   private createParticle(x: number, y: number): Particle {
@@ -1102,9 +1141,13 @@ export class GameFallback {
     ctx.font = '25px "Courier New", monospace';
     ctx.fillText('Press SPACE for next level', cx, cy + 140);
 
-    ctx.fillStyle = 'gray';
+    ctx.fillStyle = 'gold';
     ctx.font = '20px "Courier New", monospace';
-    ctx.fillText('Press M for menu', cx, cy + 170);
+    ctx.fillText('Press S to share score', cx, cy + 170);
+
+    ctx.fillStyle = 'gray';
+    ctx.font = '18px "Courier New", monospace';
+    ctx.fillText('Press M for menu', cx, cy + 200);
   }
 
   private wrapText(text: string, maxWidth: number): string[] {
