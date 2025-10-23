@@ -255,6 +255,7 @@ export class GameFallback {
     const aiCoach = (window as any).__aiCoach;
     if (!aiCoach || this.isLoadingFeedback) {
       this.aiFeedback = `Great job! You scored ${this.score} points!`;
+      await this.recordSessionStats(); // Record stats even without AI
       return;
     }
 
@@ -272,12 +273,38 @@ export class GameFallback {
 
       this.aiFeedback = await aiCoach.getSessionFeedback(stats);
       this.previousWpm = stats.wpm;
+
+      // Record stats after getting feedback
+      await this.recordSessionStats();
     } catch (error) {
       console.warn('AI feedback failed:', error);
       this.aiFeedback = `Great job! You scored ${this.score} points!`;
+      await this.recordSessionStats(); // Record stats even if AI fails
     } finally {
       this.isLoadingFeedback = false;
     }
+  }
+
+  private async recordSessionStats() {
+    // Save session to stats manager and refresh UI
+    const statsManager = (window as any).__statsManager;
+    if (!statsManager) return;
+
+    const accuracy = this.totalCount > 0
+      ? Math.floor((this.correctCount / this.totalCount) * 100)
+      : 100;
+
+    await statsManager.recordSession({
+      score: this.score,
+      wpm: this.calculateWPM(),
+      accuracy: accuracy,
+      level: this.level.name,
+      duration: Math.round(this.levelTimer),
+    });
+
+    // Trigger stats refresh in UI
+    const refreshEvent = new CustomEvent('stats-updated');
+    window.dispatchEvent(refreshEvent);
   }
 
   private spawnLetter() {
@@ -352,6 +379,8 @@ export class GameFallback {
             this.state = GameState.GameOver;
             // Sound effect for game over
             audioManager.playSFX('gameOver');
+            // Request AI feedback asynchronously
+            this.requestAIFeedback();
           }
         }
       }
@@ -703,18 +732,35 @@ export class GameFallback {
     ctx.font = 'bold 60px "Courier New", monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('GAME OVER', cx, cy - 80);
+    ctx.fillText('GAME OVER', cx, cy - 140);
+
+    const accuracy = this.totalCount > 0
+      ? Math.floor((this.correctCount / this.totalCount) * 100)
+      : 100;
+    const wpm = this.calculateWPM();
 
     ctx.fillStyle = 'yellow';
     ctx.font = '30px "Courier New", monospace';
-    ctx.fillText(`Final Score: ${this.score}`, cx, cy);
+    ctx.fillText(`Final Score: ${this.score}`, cx, cy - 60);
+
+    ctx.fillStyle = 'white';
+    ctx.fillText(`Accuracy: ${accuracy}%`, cx, cy - 20);
+    ctx.fillText(`WPM: ${wpm}`, cx, cy + 20);
+
+    // AI Feedback
+    ctx.fillStyle = '#ff6b6b';
+    ctx.font = '18px "Courier New", monospace';
+    const feedbackLines = this.wrapText(this.aiFeedback, 500);
+    feedbackLines.forEach((line, i) => {
+      ctx.fillText(line, cx, cy + 60 + i * 25);
+    });
 
     ctx.fillStyle = 'white';
     ctx.font = '25px "Courier New", monospace';
-    ctx.fillText('Press SPACE to retry', cx, cy + 60);
+    ctx.fillText('Press SPACE to retry', cx, cy + 140);
 
     ctx.fillStyle = 'gray';
     ctx.font = '20px "Courier New", monospace';
-    ctx.fillText('Press M for menu', cx, cy + 90);
+    ctx.fillText('Press M for menu', cx, cy + 170);
   }
 }

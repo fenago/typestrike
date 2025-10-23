@@ -26,9 +26,15 @@ class TypeStrikeApp {
     // Initialize settings UI
     new SettingsUI(this.config);
 
-    // Expose AI coach and config globally for game access
+    // Expose AI coach, config, and stats globally for game access
     (window as any).__aiCoach = this.aiCoach;
     (window as any).__config = this.config;
+    (window as any).__statsManager = this.stats;
+
+    // Listen for stats updates from game
+    window.addEventListener('stats-updated', () => {
+      this.updateStatsDisplay();
+    });
   }
 
   async init() {
