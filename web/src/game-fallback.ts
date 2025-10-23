@@ -9,6 +9,7 @@ interface Letter {
   speed: number;
   size: number;
   targeted: boolean;
+  isWord?: boolean;  // True if this is a complete word (worth more points)
 }
 
 interface Particle {
@@ -67,6 +68,9 @@ export class GameFallback {
   private aiFeedback = 'Great work! Keep practicing!';
   private previousWpm = 0;
   private isLoadingFeedback = false;
+  private currentWordInput = '';  // Track multi-character input for words
+  private easterEggBuffer = '';   // Track last few keys for easter egg detection
+  private activeEasterEggs: Set<string> = new Set();  // Currently active easter eggs
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -382,14 +386,43 @@ export class GameFallback {
   private handleLetterTyped(char: string) {
     this.totalCount++;
 
-    // Find matching letter (closest to ground)
+    // Track for easter eggs
+    this.easterEggBuffer += char;
+    if (this.easterEggBuffer.length > 10) {
+      this.easterEggBuffer = this.easterEggBuffer.slice(-10);
+    }
+    this.checkEasterEggs();
+
+    // Track for word input
+    this.currentWordInput += char;
+    if (this.currentWordInput.length > 10) {
+      this.currentWordInput = this.currentWordInput.slice(-10);
+    }
+
+    // Try to match a word first
     let foundIndex = -1;
     let maxY = -1;
+    let isWordMatch = false;
 
     for (let i = 0; i < this.letters.length; i++) {
-      if (this.letters[i].char === char && this.letters[i].y > maxY) {
-        foundIndex = i;
-        maxY = this.letters[i].y;
+      if (this.letters[i].isWord) {
+        // Check if current input matches this word
+        if (this.letters[i].char === this.currentWordInput && this.letters[i].y > maxY) {
+          foundIndex = i;
+          maxY = this.letters[i].y;
+          isWordMatch = true;
+        }
+      }
+    }
+
+    // If no word match, try single letter
+    if (foundIndex === -1) {
+      for (let i = 0; i < this.letters.length; i++) {
+        if (!this.letters[i].isWord && this.letters[i].char === char && this.letters[i].y > maxY) {
+          foundIndex = i;
+          maxY = this.letters[i].y;
+          isWordMatch = false;
+        }
       }
     }
 
@@ -399,21 +432,30 @@ export class GameFallback {
       this.correctCount++;
       this.combo++;
 
-      const basePoints = 10;
+      // Words are worth 3x points
+      const basePoints = isWordMatch ? 30 : 10;
       const multiplier = 1 + Math.floor(this.combo / 10);
       this.score += basePoints * multiplier;
 
-      // Particles
-      for (let i = 0; i < 15; i++) {
+      // Reset word input on success
+      if (isWordMatch) {
+        this.currentWordInput = '';
+      }
+
+      // More particles for words
+      const particleCount = isWordMatch ? 30 : 15;
+      for (let i = 0; i < particleCount; i++) {
         this.particles.push(this.createParticle(letter.x, letter.y));
       }
 
-      this.screenShake = 2;
-      this.triggerFlash('rgba(57,255,20,80)');
+      this.screenShake = isWordMatch ? 4 : 2;
+      this.triggerFlash(isWordMatch ? 'rgba(255,215,0,100)' : 'rgba(57,255,20,80)');
 
       // Sound effects
-      audioManager.playLetterNote(char);
-      audioManager.playSFX('letterHit');
+      if (!isWordMatch) {
+        audioManager.playLetterNote(char);
+      }
+      audioManager.playSFX(isWordMatch ? 'achievementUnlock' : 'letterHit');
 
       // Combo milestone sounds
       if (this.combo > 0 && this.combo % 10 === 0) {
@@ -422,12 +464,55 @@ export class GameFallback {
     } else {
       // Wrong!
       this.combo = 0;
+      this.currentWordInput = '';  // Reset word input on miss
       this.score = Math.max(0, this.score - 2);
       this.triggerFlash('rgba(255,51,102,150)');
 
       // Sound effect for wrong letter
       audioManager.playSFX('wrongLetter');
     }
+  }
+
+  private checkEasterEggs() {
+    const buffer = this.easterEggBuffer;
+
+    // Check each easter egg
+    if (buffer.includes('SOS') && !this.activeEasterEggs.has('SOS')) {
+      this.activateEasterEgg('SOS', 'Shield activated! Extra life!');
+      this.lives = Math.min(this.maxLives, this.lives + 1);
+    }
+    if (buffer.includes('WOW') && !this.activeEasterEggs.has('WOW')) {
+      this.activateEasterEgg('WOW', 'Combo boost! +50 combo!');
+      this.combo += 50;
+    }
+    if (buffer.includes('ZEN') && !this.activeEasterEggs.has('ZEN')) {
+      this.activateEasterEgg('ZEN', 'Focus mode! Slow motion activated!');
+      // Slow down all letters temporarily
+      this.letters.forEach(l => l.speed *= 0.7);
+    }
+    if (buffer.includes('007') && !this.activeEasterEggs.has('007')) {
+      this.activateEasterEgg('007', 'Secret agent mode! Double points!');
+      this.score *= 2;
+    }
+    if (buffer.includes('RUSH') && !this.activeEasterEggs.has('RUSH')) {
+      this.activateEasterEgg('RUSH', 'Turbo mode! Max speed!');
+      this.letters.forEach(l => l.speed *= 1.5);
+    }
+    if (buffer.includes('GODMODE') && !this.activeEasterEggs.has('GODMODE')) {
+      this.activateEasterEgg('GODMODE', 'Invincibility! Infinite lives!');
+      this.lives = 999;
+    }
+  }
+
+  private activateEasterEgg(code: string, message: string) {
+    this.activeEasterEggs.add(code);
+    this.triggerFlash('rgba(255,215,0,150)');
+    audioManager.playSFX('achievementUnlock');
+
+    // Show easter egg message
+    console.log(`🎉 EASTER EGG: ${message}`);
+
+    // Could add visual notification here
   }
 
   private createParticle(x: number, y: number): Particle {
@@ -517,18 +602,35 @@ export class GameFallback {
   private spawnLetter() {
     if (this.level.letters.length === 0) return;
 
-    const char = this.level.letters[Math.floor(Math.random() * this.level.letters.length)];
     const margin = 60;
     const x = margin + Math.random() * (this.canvas.width - margin * 2);
 
-    this.letters.push({
-      char,
-      x,
-      y: -50,
-      speed: this.level.fallSpeed,
-      size: 40,
-      targeted: false,
-    });
+    // 30% chance to spawn a word if words are available
+    const shouldSpawnWord = this.level.words && Math.random() < 0.3;
+
+    if (shouldSpawnWord && this.level.words && this.level.words.length > 0) {
+      const word = this.level.words[Math.floor(Math.random() * this.level.words.length)];
+      this.letters.push({
+        char: word.toUpperCase(),
+        x,
+        y: -50,
+        speed: this.level.fallSpeed * 0.8, // Slightly slower for words
+        size: 30,
+        targeted: false,
+        isWord: true,
+      });
+    } else {
+      const char = this.level.letters[Math.floor(Math.random() * this.level.letters.length)];
+      this.letters.push({
+        char,
+        x,
+        y: -50,
+        speed: this.level.fallSpeed,
+        size: 40,
+        targeted: false,
+        isWord: false,
+      });
+    }
   }
 
   public start() {
@@ -691,31 +793,65 @@ export class GameFallback {
     const ctx = this.ctx;
 
     for (const letter of this.letters) {
-      // Glow
-      ctx.fillStyle = 'rgba(0,240,255,0.2)';
-      ctx.beginPath();
-      ctx.arc(letter.x, letter.y, letter.size * 0.8, 0, Math.PI * 2);
-      ctx.fill();
+      if (letter.isWord) {
+        // Words: Draw as rounded rectangle
+        const textWidth = ctx.measureText(letter.char).width;
+        const padding = 15;
+        const width = textWidth + padding * 2;
+        const height = letter.size + padding;
 
-      // Background
-      ctx.fillStyle = 'rgba(0,100,120,0.8)';
-      ctx.beginPath();
-      ctx.arc(letter.x, letter.y, letter.size * 0.6, 0, Math.PI * 2);
-      ctx.fill();
+        // Glow
+        ctx.fillStyle = 'rgba(255,215,0,0.3)';
+        ctx.fillRect(letter.x - width/2 - 5, letter.y - height/2 - 5, width + 10, height + 10);
 
-      // Letter
-      ctx.fillStyle = 'white';
-      ctx.font = `bold ${letter.size * 1.2}px "Courier New", monospace`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(letter.char, letter.x, letter.y);
+        // Background
+        ctx.fillStyle = 'rgba(255,140,0,0.8)';
+        ctx.fillRect(letter.x - width/2, letter.y - height/2, width, height);
+
+        // Word
+        ctx.fillStyle = 'white';
+        ctx.font = `bold ${letter.size}px "Courier New", monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(letter.char, letter.x, letter.y);
+
+        // Word indicator
+        ctx.fillStyle = 'gold';
+        ctx.font = `12px "Courier New", monospace`;
+        ctx.fillText('×3', letter.x, letter.y - height/2 - 10);
+      } else {
+        // Single letters: Draw as circles
+        // Glow
+        ctx.fillStyle = 'rgba(0,240,255,0.2)';
+        ctx.beginPath();
+        ctx.arc(letter.x, letter.y, letter.size * 0.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Background
+        ctx.fillStyle = 'rgba(0,100,120,0.8)';
+        ctx.beginPath();
+        ctx.arc(letter.x, letter.y, letter.size * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Letter
+        ctx.fillStyle = 'white';
+        ctx.font = `bold ${letter.size * 1.2}px "Courier New", monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(letter.char, letter.x, letter.y);
+      }
 
       // Targeting
       if (letter.targeted) {
         ctx.strokeStyle = 'yellow';
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(letter.x, letter.y, letter.size * 0.9, 0, Math.PI * 2);
+        if (letter.isWord) {
+          const textWidth = ctx.measureText(letter.char).width;
+          ctx.strokeRect(letter.x - textWidth/2 - 20, letter.y - letter.size - 10, textWidth + 40, letter.size * 2 + 20);
+        } else {
+          ctx.arc(letter.x, letter.y, letter.size * 0.9, 0, Math.PI * 2);
+        }
         ctx.stroke();
       }
     }
